@@ -1,0 +1,208 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>css3</title>
+<link rel="stylesheet" type="text/css" href="css3Draw.css"/>
+<script src="jquery.js"></script>
+<script src="jQueryUI/jquery-ui.min.js"></script>
+<style>
+
+</style>
+
+  <script>
+  var currentDragIndex = 0;
+  var currentObjId = "";
+
+  $(function() {
+
+	var showGraphicalAttr = function(obj){
+		$("#attribute-panel-width").val(obj.width());
+		$("#attribute-panel-height").val(obj.height());
+		
+		var currentLayerIndex = currentObjId.substr(currentObjId.length-1,currentObjId.length);
+		$("#attribute-panel-layer-index").val(currentLayerIndex);
+        /*$("#attribute-panel-layerIndex").val(currentLayerIndex);
+		$("#attribute-panel-layerIndex").attr("max",currentDragIndex);*/
+	};
+	
+	//select-graphical click event
+	$(".graphical").each(function(i,obj){
+       $(obj).click(function () {
+			currentDragIndex++;
+			//generate a graphical
+		    $(obj).children("div").attr("id","dragObjPrototype");
+			var gDiv = $(obj).html();
+			var dragObjId = "dragObj" + currentDragIndex;
+			//var gClass = $(obj).children()[0].className;
+			var gDiv = gDiv.replace("dragObjPrototype",dragObjId);
+			$(".draw-board").append(gDiv);
+			$(obj).children("div").attr("id","");
+			/*$("#" + dragObjId).css("left",$("#" + dragObjId).position().left);
+			$("#" + dragObjId).css("top",$("#" + dragObjId).position().top);	*/		
+			//var gObj = $(".draw-board").find("." + gClass).eq(0);
+			//gObj.attr("id",dragObjId);	
+			$("#" + dragObjId).draggable({ scroll: true });
+			$("#" + dragObjId).click(function () {
+				 currentObjId = $(this).attr("id");
+   				 showGraphicalAttr($(this));
+			});
+		});
+    });
+	$("#attribute-panel-layer-down").click(function () {
+		downLayer();
+	});
+	$("#attribute-panel-layer-up").click(function () {
+		upLayer();
+	});	
+	
+	//change the width and height
+	$("#attribute-panel-width").mousemove(function() {
+		$("#" + currentObjId).width($(this).val());		
+	});
+	$("#attribute-panel-height").mousemove(function() {
+		$("#" + currentObjId).height($(this).val());		
+	});
+	//let the graphical layer rise
+	var upLayer = function(){
+		var layerMaxIndex = parseInt($(".ui-draggable").length);
+		var currentLayerIndex = parseInt(currentObjId.substr(currentObjId.length-1,currentObjId.length));
+		if(currentLayerIndex < layerMaxIndex){
+			/*var top = $("#dragObj" + (currentLayerIndex + 1)).position().top;
+			var left = $("#dragObj" + (currentLayerIndex + 1)).position().left;
+			var top1 = $("#dragObj" + currentLayerIndex).position().top;
+			var left1 = $("#dragObj" + currentLayerIndex).position().left;*/
+			var tempId1 = $("#dragObj" + (currentLayerIndex + 1)).attr("id");
+			var tempId = $("#dragObj" + currentLayerIndex).attr("id");
+		
+			$("#dragObj" + currentLayerIndex).attr("id","temp");	
+			$("#dragObj" + (currentLayerIndex + 1)).attr("id",tempId);
+			$("#temp").attr("id",tempId1);			
+				
+			/*$("#dragObj" + (currentLayerIndex)).css("top",top);	
+			$("#dragObj" + (currentLayerIndex)).css("left",left);*/
+		
+			/*$("#dragObj" + (currentLayerIndex + 1)).css("top",top1);	
+			$("#dragObj" + (currentLayerIndex + 1)).css("left",left1);*/
+		}
+		makeGraphicalInOrder($("#dragObj" + (currentLayerIndex + 1)),$("#dragObj" + currentLayerIndex),(currentLayerIndex + 1),1);
+		$("#attribute-panel-layer-index").val(currentLayerIndex + 1);
+	}
+	var downLayer = function(){		
+		//var layerMaxIndex = $(".ui-draggable").length;
+		var currentLayerIndex = parseInt(currentObjId.substr(currentObjId.length-1,currentObjId.length));
+		if(currentLayerIndex > 1){
+			/*$("#dragObj" + (currentLayerIndex - 1)).attr("id",currentObjId);	
+			$("#dragObj" + currentLayerIndex).attr("id","dragObj" + (currentLayerIndex - 1));	*/
+			
+			var tempId1 = $("#dragObj" + (currentLayerIndex - 1)).attr("id");
+			var tempId = $("#dragObj" + currentLayerIndex).attr("id");
+		
+			$("#dragObj" + currentLayerIndex).attr("id","temp");	
+			$("#dragObj" + (currentLayerIndex - 1)).attr("id",tempId);
+			$("#temp").attr("id",tempId1);		
+		}
+		makeGraphicalInOrder($("#dragObj" + (currentLayerIndex - 1)),$("#dragObj" + (currentLayerIndex )),(currentLayerIndex-1),2);
+		$("#attribute-panel-layer-index").val(currentLayerIndex - 1);
+	}
+	var makeGraphicalInOrder = function(downObj,upObj,index,downOrUp){		
+		var temp = "";
+		if(downOrUp == 1){
+			temp = downObj.get(0).outerHTML;
+			$(downObj).remove();
+			$(upObj).after(temp);
+		}
+		else{
+			temp = downObj.get(0).outerHTML;
+			$(downObj).remove();
+			$(upObj).before(temp);
+		}
+		
+		/*temp = downObj.get(0).outerHTML;
+		$(downObj).remove();
+		$(upObj).after(temp);*/
+		$("#dragObj" + index).draggable({ scroll: true });	
+		$("#dragObj" + index).click(function () {
+				 currentObjId = $(this).attr("id");
+   				 showGraphicalAttr($(this));
+			});	
+	}
+	/*$("input[type='range']").change(function() {
+        $("#" + currentObjId).width($("#attribute-panel-width").val());
+		$("#" + currentObjId).height($("#attribute-panel-height").val());		
+	});*/
+	/*$(".graphical div").click(function () {
+		debugger;
+		currentDragIndex++;
+		//generate a graphical
+		var gDiv = $(this)[0].html();
+		var gClass = $(this)[0].className;
+		$(".draw-board").append(gDiv);
+		var dragObjId = "dragObj" + currentDragIndex;	
+		$(".draw-board").find(gClass).eq(0).attr("id",dragObjId);	
+	    $("#" + dragObjId).draggable({ scroll: true });
+	});*/
+
+  });
+
+  </script>
+
+
+</head>
+
+<body>
+<div class="platform">
+    <div class="left">
+        <div class="draw-board">
+         	
+        </div>
+        <div class="select-graphical">
+        	<ul>
+            	<li class="graphical">
+                	<div class="square">
+                    </div>
+                </li>
+                <li class="graphical">
+                	<div class="circle">
+                    </div>
+                </li>
+                <li class="graphical">
+                	<div class="trapezoid">
+                    </div>
+                </li>
+                <li class="graphical">
+                </li>
+                <li class="graphical">
+                </li>
+                <li class="graphical">
+                </li>
+                <li class="graphical">
+                </li>
+                <li class="graphical">
+                </li>
+                <li class="graphical">
+                </li>
+                <li class="graphical">
+               	    <div class="trapezoid">
+                    </div>
+                </li>
+            </ul>       	
+        </div>
+    </div>
+    <div class="attribute-panel">
+    	<div class="change-scale">
+        	<input id="attribute-panel-width" type="range"  min="1" max="600" />
+            <input id="attribute-panel-height" type="range" min="1" max="600" />
+            <!--<input id="attribute-panel-layerIndex" type="number"  min="0" />-->
+            <input id="attribute-panel-layer-down" type="button" value="-">
+            <input id="attribute-panel-layer-index" value="0" type="text">
+            <input id="attribute-panel-layer-up" type="button" value="+">
+        </div>
+    </div>
+</div>
+
+
+
+
+</body>
+</html>
